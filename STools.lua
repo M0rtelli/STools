@@ -10,7 +10,7 @@
     encoding.default = 'CP1251'
     u8 = encoding.UTF8
     script_name('Support Tools')
-    script_version('1.0')
+    script_version('03.08.2021')
     
 ----------- оепелеммше ------->>
 
