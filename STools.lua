@@ -144,8 +144,9 @@ function main()
     if not isSampfuncsLoaded() or not isSampLoaded() then
         return
         end
-    if doesFileExist('moonloader\\config\\STools.ini') then
-        inicfg.save(cfg, 'STools.ini')
+    if not doesFileExist(getWorkingDirectory() .. '\\config\\GPS.ini') then
+        info_msg('Отсутствует INI-файл (файл с настройками). Уже качаю :)')
+        downloadUrlToFile('https://raw.githubusercontent.com/M0rtelli/STools/main/config/GPS.ini', getWorkingDirectory() .. '/config/GPS.ini', download_handler)
     end
     sampRegisterChatCommand('update_stools', function() 
     update("https://gist.githubusercontent.com/M0rtelli/44ea4b212e724f82803647bb87f257d5/raw", '['..string.upper(thisScript().name)..']: ', "https://raw.githubusercontent.com/M0rtelli/STools/main/STools.lua")
@@ -209,11 +210,11 @@ function sampev.onServerMessage(color, text)
 end
 
 function sampev.onConnectionRequestAccepted(ip, port, playerId, challenge)
-    if ip == '80.66.82.227' then
+    if ip == '-1374693851' then
         check_upd("https://gist.githubusercontent.com/M0rtelli/44ea4b212e724f82803647bb87f257d5/raw", '['..string.upper(thisScript().name)..']: ', "https://raw.githubusercontent.com/M0rtelli/STools/main/STools.lua")
         print('challe - ' .. challenge)
     else
-        info_msg('Вы подключились к ' .. ip .. ':' .. port .. ', что не является SanTrope RP 1 server. Скрипт был отключён!')
+        info_msg('Вы подключились, но не на SanTrope 01. Скрипт был отключён!')
         thisScript():unload()
     end
 end
@@ -348,4 +349,13 @@ function split(str, delim, plain)
         pos = epos and epos + 1
     until not pos
     return tokens
+  end
+
+function download_handler(id, status, p1, p2)
+    if stop_downloading then
+      stop_downloading = false
+      download_id = nil
+      
+      return false 
+    end
   end
