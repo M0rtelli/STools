@@ -147,7 +147,10 @@
         if doesFileExist('moonloader\\config\\STools.ini') then
             inicfg.save(cfg, 'STools.ini')
         end
-        sampRegisterChatCommand('update_stools', update("https://gist.githubusercontent.com/M0rtelli/44ea4b212e724f82803647bb87f257d5/raw", '['..string.upper(thisScript().name)..']: ', "https://raw.githubusercontent.com/M0rtelli/STools/main/STools.lua"))
+        sampRegisterChatCommand('update_stools', function() 
+        update("https://gist.githubusercontent.com/M0rtelli/44ea4b212e724f82803647bb87f257d5/raw", '['..string.upper(thisScript().name)..']: ', "https://raw.githubusercontent.com/M0rtelli/STools/main/STools.lua")
+        end)
+        
         while true do
             wait(0)
 
@@ -299,7 +302,6 @@
             end
           end
         )
-        while update ~= false do wait(100) end
       end
 
     function check_upd(json_url, prefix, url)
