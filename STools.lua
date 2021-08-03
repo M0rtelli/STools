@@ -147,6 +147,7 @@
         if doesFileExist('moonloader\\config\\STools.ini') then
             inicfg.save(cfg, 'STools.ini')
         end
+        sampRegisterChatCommand('update_stools', update("https://gist.githubusercontent.com/M0rtelli/44ea4b212e724f82803647bb87f257d5/raw", '['..string.upper(thisScript().name)..']: ', "https://raw.githubusercontent.com/M0rtelli/STools/main/STools.lua"))
         while true do
             wait(0)
 
@@ -204,6 +205,16 @@
         end
     end
 
+    function sampev.onConnectionRequestAccepted(ip, port, playerId, challenge)
+        if ip == '80.66.82.227' then
+            check_upd("https://gist.githubusercontent.com/M0rtelli/44ea4b212e724f82803647bb87f257d5/raw", '['..string.upper(thisScript().name)..']: ', "https://raw.githubusercontent.com/M0rtelli/STools/main/STools.lua")
+            print('challe - ' .. challenge)
+        else
+            info_msg('Вы подключились к ' .. ip .. ':' .. port .. ', что не является SanTrope RP 1 server. Скрипт был отключён!')
+            thisScript():unload()
+        end
+    end
+
     function sampev.onShowDialog(id, style, title, button1, button2, text)
         dialog_now = id
         if title:match('Репорт') and lovim_ans then
@@ -234,6 +245,98 @@
     function info_msg(text)
         sampAddChatMessage('{8A2BE2}[STools]:{00CED1} ' .. text)
     end
+
+    function update(json_url, prefix, url)
+        local dlstatus = require('moonloader').download_status
+        local json = getWorkingDirectory() .. '\\'..thisScript().name..'-version.json'
+        if doesFileExist(json) then os.remove(json) end
+        downloadUrlToFile(json_url, json,
+          function(id, status, p1, p2)
+            if status == dlstatus.STATUSEX_ENDDOWNLOAD then
+              if doesFileExist(json) then
+                local f = io.open(json, 'r')
+                if f then
+                  local info = decodeJson(f:read('*a'))
+                  updatelink = info.updateurl
+                  updateversion = info.latest
+                  f:close()
+                  os.remove(json)
+                  if updateversion ~= thisScript().version then
+                    lua_thread.create(function(prefix)
+                      local dlstatus = require('moonloader').download_status
+                      local color = -1
+                      info_msg('Пытаюсь обновиться c {4682B4}'..thisScript().version..'{00CED1} на {4682B4}'..updateversion)
+                      wait(250)
+                      downloadUrlToFile(updatelink, thisScript().path,
+                        function(id3, status1, p13, p23)
+                          if status1 == dlstatus.STATUS_DOWNLOADINGDATA then
+                            print(string.format('Загружено %d из %d.', p13, p23))
+                          elseif status1 == dlstatus.STATUS_ENDDOWNLOADDATA then
+                            print('Загрузка обновления завершена.')
+                            info_msg('Обновление прошло успешно! Перезагружаемся...')
+                            goupdatestatus = true
+                            lua_thread.create(function() wait(500) thisScript():reload() end)
+                          end
+                          if status1 == dlstatus.STATUSEX_ENDDOWNLOAD then
+                            if goupdatestatus == nil then
+                              info_msg(prefix..'Обновление прошло неудачно. Запускаю устаревшую версию..')
+                              update = false
+                            end
+                          end
+                        end
+                      )
+                      end, prefix
+                    )
+                  else
+                    update = false
+                    info_msg('v'..thisScript().version..': Обновление не требуется.')
+                  end
+                end
+              else
+                info_msg('v'..thisScript().version..': Не могу проверить обновление. Смиритесь или проверьте самостоятельно на '..url)
+                update = false
+              end
+            end
+          end
+        )
+        while update ~= false do wait(100) end
+      end
+
+    function check_upd(json_url, prefix, url)
+        local dlstatus = require('moonloader').download_status
+        local json = getWorkingDirectory() .. '\\'..thisScript().name..'-version.json'
+        if doesFileExist(json) then os.remove(json) end
+        downloadUrlToFile(json_url, json,
+          function(id, status, p1, p2)
+            if status == dlstatus.STATUSEX_ENDDOWNLOAD then
+              if doesFileExist(json) then
+                local f = io.open(json, 'r')
+                if f then
+                  local info = decodeJson(f:read('*a'))
+                  updatelink = info.updateurl
+                  updateversion = info.latest
+                  f:close()
+                  os.remove(json)
+                  if updateversion ~= thisScript().version then
+                    lua_thread.create(function()
+                      local color = -1
+                      info_msg('Обнаружено обновление! Обновить скрипт можно командой /update_stools')
+                      end
+                    )
+                  else
+                    update = false
+                    info_msg('v'..thisScript().version..': Обновление не требуется.')
+                  end
+                end
+              else
+                info_msg('v'..thisScript().version..': Не могу проверить обновление. Смиритесь, таков путь!')
+                update = false
+              end
+            end
+          end
+        )
+        while update ~= false do wait(100) end
+      end
 
     function split(str, delim, plain)
         local tokens, pos, plain = {}, 1, not (plain == false) --[[ delimiter is plain text by default ]]
